@@ -73,7 +73,7 @@ Description: This screenshot shows the Azure Container Registry (ACR) instance `
 ![validate-api build](docs/validate_api_build.png)  
 ![report-job build](docs/report_job_build.png)  
 ![function-app build 1](docs/function_appbuild1.png)  
-![function-app build 2](docs/function_appbuild2.png)
+![function-app build 2](docs/function_app_build2.png)
 ![local validator test](docs/local_test_validator.png)
 
 
@@ -191,8 +191,9 @@ The `reports` blob container was successfully created in Azure Storage. This con
 
 ### Evidence 6.2: Manual ACI Run
 
-![container_show_output.png](docs/container_show_output.png)
+![container_show_output.png](docs/container_show_ouput.png)
 
+**Description:** 
 The container `ci-report-test` was executed manually using Azure Container Instances. The final state of the container is **Succeeded**, meaning the job completed successfully and exited as expected under the `Never` restart policy. This confirms that the report generation workflow ran correctly inside ACI, including PDF creation and upload to Azure Blob Storage.
 
 
@@ -200,6 +201,7 @@ The container `ci-report-test` was executed manually using Azure Container Insta
 
 ![container_logs_output.png](docs/container_logs_output.png)
 
+**Description:** 
 The logs show the execution of the `report-job` inside the container. The application successfully processed the input order data, generated a PDF report, and uploaded it to the Azure Blob Storage `reports` container. The log entry **"Uploaded TEST-001.pdf to reports container"** confirms successful authentication using Managed Identity and successful upload operation.
 
 
@@ -207,6 +209,7 @@ The logs show the execution of the `report-job` inside the container. The applic
 
 ![generated_PDF.png](docs/generated_PDF.png)
 
+**Description:** 
 This screenshot shows the file `TEST-001.pdf` stored in the Azure Blob Storage `reports` container. It proves that the ACI job successfully wrote output to cloud storage. The presence of the PDF confirms end-to-end execution: input processing → PDF generation → secure upload using Managed Identity → successful persistence in Azure Blob Storage.
 
 ### Evidence 6.5: Function App Managed Identity and IAM
@@ -241,7 +244,7 @@ The frontend initiates the Durable Function by sending a POST request to `FUNCTI
 
 ![Before Submit](docs/happy_path_1.png)
 ![Running Status](docs/happy_path_2.png)
-![Processing](docs/happy_path_3.png)
+![Processing](docs/happy_path3.png)
 ![Completed with Report URL](docs/happy_path_4.png)
 
 **Description:**
@@ -277,9 +280,9 @@ When an order contains an invalid condition such as `qty > 100`, the validation 
 
 ### Evidence 8.1: Architecture Diagram
 
-[architecture diagram](docs/24030001_architecture_diagram.png)
+![architecture diagram](docs/24030001_architecture_diagram.png)
 
-Description: TODO: Confirm that it shows GitHub, App Service, Durable Function, AKS, ACI, Blob Storage, ACR, and IAM.
+This architecture diagram provides an end-to-end overview of the system workflow, showing integration between GitHub for CI/CD, Azure App Service for web deployment, Durable Functions for orchestration, Azure Kubernetes Service (AKS) for containerized workloads, Azure Container Instances (ACI) for ephemeral execution, Blob Storage for data storage, Azure Container Registry (ACR) for container images, and IAM role-based access control for secure resource communication and permissions across all services.
 
 ### Question 8.2: Service Selection
 
