@@ -54,9 +54,14 @@ Description: This screenshot shows that the Azure Web App is connected to my for
 ### Evidence 1.4: Live Web UI
 
 ![TaskFlow Web UI](docs/dashboard_loading.png)
-![Application Settings](docs/app_settings.png)
 
 Description: This screenshot shows the TaskFlow web interface successfully loaded in a browser from the deployed Azure App Service. It confirms that the frontend is being served correctly by the Node.js application, and the Web App is accessible via its public URL. The UI loads as expected, indicating that the deployment and hosting configuration are working properly.
+
+### Evidence 1.5: Application Settings configured
+
+![Application Settings](docs/app_settings.png)
+
+Description: This screenshot shows the configured Application Settings in the Azure App Service. It confirms that required environment variables and service connections are properly set, enabling the application to function correctly.
 
 ---
 
@@ -74,14 +79,24 @@ Description: This screenshot shows the Azure Container Registry (ACR) instance `
 ![report-job build](docs/report_job_build.png)  
 ![function-app build 1](docs/function_appbuild1.png)  
 ![function-app build 2](docs/function_app_build2.png)
-![local validator test](docs/local_test_validator.png)
 
 
 Description: These screenshots show the successful local Docker builds for all three required services in the TaskFlow pipeline. The `validate-api` image was built from the `validate-api/` folder, the `report-job` image was built from the `report-job/` folder, and the `func-app` image was built from the `function-app/` folder. Each build confirms that the Dockerfiles are correctly configured and that all dependencies were installed successfully, resulting in valid container images ready for tagging and deployment to Azure Container Registry.
 
-### Evidence 2.3: ACR Repositories
+### Evidence 2.3:  Local test of validator
 
-![ACR Push Output](docs/push_to_acr.png)  
+![local validator test](docs/local_test_validator.png)
+
+Description: This screenshot shows a local test of the validator service where a POST request to the /validate endpoint returns a JSON response. It confirms that the validation API is working correctly and responding as expected.
+
+### Evidence 2.4: Successful pushes to ACR
+
+![ACR Push Output](docs/push_to_acr.png) 
+
+Description: This screenshot shows successful pushes of all three container images to Azure Container Registry (ACR). It confirms that the images have been built and stored correctly, making them available for deployment in services like AKS and ACI.
+
+### Evidence 2.5: ACR Repositories
+  
 ![ACR Repository List](docs/ACR_repository_list.png)
 
 Description: This evidence confirms that all three Docker images were successfully pushed to Azure Container Registry (ACR). The repositories `validate-api:v1`, `report-job:v1`, and `func-app:v1` are visible in the registry, verifying that the container images were correctly tagged and uploaded. This step ensures that all services are now stored in ACR and ready for deployment to AKS, ACI, and Azure Functions as part of the TaskFlow pipeline.
@@ -110,20 +125,25 @@ The Durable Functions runtime successfully discovered and registered all functio
 ### Evidence 4.1: Function App Container Configuration
 
 ![container_img_config](docs/container_img_config.png)
-![function list output](docs/func_list.png)
 
 
 **Description:**  
 The Function App **pa4-24030001-fn** is successfully configured to run using a custom container image hosted in Azure Container Registry (ACR). The deployed image is `func-app:v1`, pulled from the registry URI `pa424030001.azurecr.io/func-app:v1`. This confirms that the Function App is correctly set up for container-based deployment and is using the intended image version for execution.
 
-### Evidence 4.2: Orchestration Smoke Test
+### Evidence 4.2: Function list
+
+![function list output](docs/func_list.png)
+
+Description: This screenshot shows the list of functions in the Azure Portal, including http_starter, my_orchestrator, validate_activity, and report_activity. It confirms that all required Durable Functions have been successfully deployed and are available in the Function App.
+
+### Evidence 4.3: Orchestration Smoke Test
 
 ![curl output](docs/curl_output.png)
 
 **Description:**  
 The `curl` request successfully triggers the Durable Function orchestrator and returns a response containing an `id` and `statusQueryGetUri`. The `id` represents the unique instance ID of the orchestration, confirming that a new workflow instance has been created. The `statusQueryGetUri` provides a management endpoint that can be used to monitor the execution status of the orchestration. The presence of these fields verifies that the Function App is running correctly, the HTTP trigger is functional, and the Durable Functions runtime is successfully initiating and managing orchestration instances.
 
-### Evidence 4.3: Expected Failed Status Before Downstream Wiring
+### Evidence 4.4: Expected Failed Status Before Downstream Wiring
 
 ![status query json](docs/Status_query_url_json.png)
 
@@ -134,16 +154,16 @@ The status query response shows that the orchestration transitions from `Running
 
 ## Task 5: AKS Validator (15 points)
 
-### Evidence 5.1: AKS Cluster
-
-![AKS Overview](docs/acr_overview.png)
-
-**Description:**  
-The AKS cluster `aks-24030001` has been successfully created and is in a Succeeded state. The cluster is deployed with 1 node in the node pool, running on a standard VM size (as configured during setup). It is hosted in the `rg-sp26-24030001` resource group and deployed in the selected Azure region. The cluster is fully operational and ready to schedule workloads.
-
-### Evidence 5.2: Kubernetes Nodes and Pods
+### Evidence 5.1: Kubernetes Nodes
 
 ![Kubernetes Nodes](docs/get_nodes.png)
+
+
+**Description:**  
+The Kubernetes cluster is successfully running with one active node in a Ready state. The validator pod has been successfully scheduled onto the node and is in the Running state with 1/1 containers ready, confirming that the deployment is healthy and the container image was pulled successfully from ACR.
+
+### Evidence 5.2: Kubernetes Pods
+
 
 ![Kubernetes Pods](docs/get_pods.png)
 
@@ -170,13 +190,6 @@ The validator API is successfully deployed and accessible via the Kubernetes Loa
 
 **Description:**  
 The Azure Function App has been configured with an application setting `VALIDATE_URL`, which points to the Kubernetes validator service endpoint (`http://20.162.11.152:8080/validate`). This allows the Durable Function’s `validate_activity` to communicate with the AKS-hosted validator API. When triggered, the function sends HTTP requests to this URL to validate order data, enabling seamless integration between the Function App and the Kubernetes microservice.
-
-### Evidence 5.6: AKS Idle Behavior
-
-![AKS Idle Pods](docs/aks_idle.png)
-
-**Description:**  
-The AKS cluster remains stable even when no requests are being processed. The validator pod stays in a Running state with 1/1 containers ready and no restarts, confirming that the service continues to run in the background. This demonstrates that Kubernetes maintains persistent workloads and does not shut down resources when idle.
 
 ---
 
@@ -232,15 +245,8 @@ The Function App configuration includes several environment variables required f
 
 ## Task 7: End-to-End Pipeline (15 points)
 
-### Evidence 7.1: Web App Wiring
 
-![Function App Settings](docs/func_app_settings.png)
-
-**Description:**
-
-The frontend initiates the Durable Function by sending a POST request to `FUNCTION_START_URL`, which starts a new orchestration instance. It then uses `FUNCTION_STATUS_URL` to periodically poll the status of the workflow until completion. This allows the web app to handle long-running tasks asynchronously while updating the user with the final result.
-
-### Evidence 7.2: Happy Path UI
+### Evidence 7.1: Happy Path UI
 
 ![Before Submit](docs/happy_path_1.png)
 ![Running Status](docs/happy_path_2.png)
@@ -251,7 +257,7 @@ The frontend initiates the Durable Function by sending a POST request to `FUNCTI
 
 A valid order payload includes a properly structured JSON with fields like `order_id` and `items` (each containing `sku` and `qty`). When submitted, the system validates the order successfully, triggers the report generation via ACI, and completes the workflow by returning a `completed` status along with a downloadable report URL.
 
-### Evidence 7.3: Backend Participation
+### Evidence 7.2: Backend Participation
 
 ![Function Invocation 1](docs/invocation_1.png)
 ![Function Invocation 2](docs/invocation_2.png)
@@ -264,7 +270,7 @@ A valid order payload includes a properly structured JSON with fields like `orde
 
 The same `order_id` can be traced across all backend services to verify end-to-end execution. It first appears in the Function App logs during orchestration and validation, then in the AKS validator logs confirming successful validation. Next, it is used to create an ACI container for report generation, and finally the generated PDF with the same `order_id` is stored and verified in Blob Storage.
 
-### Evidence 7.4: Reject Path UI
+### Evidence 7.3: Reject Path UI
 
 ![Reject Path UI](docs/reject_path.png)
 ![Monitor Status (Rejected)](docs/monitor_failed.png)
@@ -273,6 +279,12 @@ The same `order_id` can be traced across all backend services to verify end-to-e
 **Description:**
 
 When an order contains an invalid condition such as `qty > 100`, the validation step fails and the orchestrator returns a `rejected` status with a reason. Since the order does not pass validation, the `report_activity` is never triggered, meaning no ACI container is created for report generation.
+
+### Evidence 7.4: Resource group showing all deployed resources
+
+![Resource group](docs/resource_group.png)
+
+Description: This screenshot shows the Azure Resource Group containing all deployed resources. It confirms that services like the App Service, Function App, AKS cluster, ACR, and storage components have been successfully created and are available.
 
 ---
 
